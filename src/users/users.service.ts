@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+import { CreateOrUpdateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -12,23 +16,52 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async createOrUpdate(
+    createOrUpdateUserDto: CreateOrUpdateUserDto,
+  ): Promise<User> {
+    const { email, username } = createOrUpdateUserDto;
+
+    await this.ensureUsernameIsUnique(username);
+
+    const user = await this.findOrCreateUserByEmail(email, username);
+
+    return this.usersRepository.save(user);
   }
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async findOne(username: string): Promise<User> {
+    return this.findUserByUsername(username);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  private async ensureUsernameIsUnique(username: string): Promise<void> {
+    const userWithUsername = await this.usersRepository.findOneBy({ username });
+
+    if (userWithUsername) {
+      throw new ConflictException('Username already exists');
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  private async findOrCreateUserByEmail(
+    email: string,
+    username: string,
+  ): Promise<User> {
+    let user = await this.usersRepository.findOneBy({ email });
+
+    if (user) {
+      user.username = username;
+    } else {
+      user = this.usersRepository.create({ email, username });
+    }
+
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  private async findUserByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new NotFoundException(`User not found with username: ${username}`);
+    }
+
+    return user;
   }
 }

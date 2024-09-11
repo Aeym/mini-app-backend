@@ -2,44 +2,47 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
-  Param,
   Delete,
+  Param,
+  Body,
+  Headers,
+  ForbiddenException,
 } from '@nestjs/common';
+
 import { ChildCareService } from './child-care.service';
 import { CreateChildCareDto } from './dto/create-child-care.dto';
-import { UpdateChildCareDto } from './dto/update-child-care.dto';
+import { FindOneParamsDto } from 'src/common/dto/find-one-params.dto';
 
-@Controller('child-care')
+@Controller()
 export class ChildCareController {
   constructor(private readonly childCareService: ChildCareService) {}
 
-  @Post()
-  create(@Body() createChildCareDto: CreateChildCareDto) {
-    return this.childCareService.create(createChildCareDto);
-  }
-
-  @Get()
-  findAll() {
+  @Get('child-cares')
+  async findAll() {
     return this.childCareService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.childCareService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateChildCareDto: UpdateChildCareDto,
+  @Post('child-care')
+  async create(
+    @Body() createChildCareDto: CreateChildCareDto,
+    @Headers('X-Auth') username: string,
   ) {
-    return this.childCareService.update(+id, updateChildCareDto);
+    if (!username) {
+      throw new ForbiddenException('Missing X-Auth header');
+    }
+
+    return this.childCareService.create(createChildCareDto, username);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.childCareService.remove(+id);
+  @Delete('child-care/:id')
+  async remove(
+    @Param() params: FindOneParamsDto,
+    @Headers('X-Auth') username: string,
+  ) {
+    if (!username) {
+      throw new ForbiddenException('Missing X-Auth header');
+    }
+
+    return this.childCareService.remove(params.id, username);
   }
 }

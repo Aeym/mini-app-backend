@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  Headers,
+  ForbiddenException,
+} from '@nestjs/common';
+
 import { ChildService } from './child.service';
 import { CreateChildDto } from './dto/create-child.dto';
-import { UpdateChildDto } from './dto/update-child.dto';
+import { FindOneParamsDto } from 'src/common/dto/find-one-params.dto';
 
-@Controller('child')
+@Controller()
 export class ChildController {
   constructor(private readonly childService: ChildService) {}
 
-  @Post()
-  create(@Body() createChildDto: CreateChildDto) {
-    return this.childService.create(createChildDto);
+  @Get('child-care/:id/children')
+  async findChildrenByChildCare(@Param() params: FindOneParamsDto) {
+    return this.childService.findChildrenByChildCare(params.id);
   }
 
-  @Get()
-  findAll() {
-    return this.childService.findAll();
+  @Post('child')
+  async create(
+    @Body() createChildDto: CreateChildDto,
+    @Headers('X-Auth') username: string,
+  ) {
+    if (!username) {
+      throw new ForbiddenException('Missing X-Auth header');
+    }
+
+    return this.childService.createOrUpdateChild(createChildDto, username);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.childService.findOne(+id);
-  }
+  @Delete('child-care/:childCareId/child/:childId')
+  async removeAssignment(
+    @Param('childCareId') childCareId: number,
+    @Param('childId') childId: number,
+    @Headers('X-Auth') username: string,
+  ) {
+    if (!username) {
+      throw new ForbiddenException('Missing X-Auth header');
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChildDto: UpdateChildDto) {
-    return this.childService.update(+id, updateChildDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.childService.remove(+id);
+    return this.childService.removeChildAssignment(
+      childCareId,
+      childId,
+      username,
+    );
   }
 }

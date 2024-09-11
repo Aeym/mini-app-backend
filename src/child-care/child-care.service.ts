@@ -1,34 +1,60 @@
-import { Injectable } from '@nestjs/common';
-import { CreateChildCareDto } from './dto/create-child-care.dto';
-import { UpdateChildCareDto } from './dto/update-child-care.dto';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { ChildCare } from './entities/child-care.entity';
+import { CreateChildCareDto } from './dto/create-child-care.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ChildCareService {
   constructor(
     @InjectRepository(ChildCare)
-    private usersRepository: Repository<ChildCare>,
+    private childCareRepository: Repository<ChildCare>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
-  create(createChildCareDto: CreateChildCareDto) {
-    return 'This action adds a new childCare';
+  async findAll(): Promise<ChildCare[]> {
+    return this.childCareRepository.find();
   }
 
-  findAll() {
-    return `This action returns all childCare`;
+  async create(
+    createChildCareDto: CreateChildCareDto,
+    username: string,
+  ): Promise<ChildCare> {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new NotFoundException(`User with username ${username} not found`);
+    }
+
+    const childCare = this.childCareRepository.create({
+      name: createChildCareDto.name,
+      user: user,
+    });
+
+    return this.childCareRepository.save(childCare);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} childCare`;
-  }
+  async remove(id: number, username: string): Promise<void> {
+    const childCare = await this.childCareRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
 
-  update(id: number, updateChildCareDto: UpdateChildCareDto) {
-    return `This action updates a #${id} childCare`;
-  }
+    if (!childCare) {
+      throw new NotFoundException(`Child care with ID ${id} not found`);
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} childCare`;
+    if (childCare.user.username !== username) {
+      throw new ForbiddenException(`You cannot delete this child care`);
+    }
+
+    await this.childCareRepository.delete(id);
   }
 }
