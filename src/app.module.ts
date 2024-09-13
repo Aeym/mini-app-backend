@@ -14,7 +14,7 @@ import { Child } from './child/entities/child.entity';
       host: 'localhost',
       port: 3306,
       username: 'nestuser',
-      password: 'yourpassword',
+      password: 'nest_password',
       database: 'nest_app',
       entities: [User, ChildCare, Child],
       synchronize: true,

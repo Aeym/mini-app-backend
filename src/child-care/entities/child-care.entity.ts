@@ -1,5 +1,3 @@
-import { Child } from 'src/child/entities/child.entity';
-import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   Entity,
@@ -9,6 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { Child } from '../../child/entities/child.entity';
+import { User } from '../../users/entities/user.entity';
 @Entity()
 export class ChildCare {
   @PrimaryGeneratedColumn()
@@ -17,7 +17,7 @@ export class ChildCare {
   @Column()
   name: string;
 
-  @ManyToOne(() => User, (user) => user.childCares)
+  @ManyToOne(() => User, (user) => user.childCares, { eager: true })
   @JoinColumn()
   user: User;
 

@@ -1,8 +1,8 @@
 {
-  "name": "backend",
+  "name": "mini-app-backend",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "Alrick Eymauzy",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -27,6 +27,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "fast-csv": "^5.0.1",
     "mysql2": "^3.11.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

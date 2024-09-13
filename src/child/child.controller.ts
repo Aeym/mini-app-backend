@@ -7,11 +7,15 @@ import {
   Body,
   Headers,
   ForbiddenException,
+  Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { ChildService } from './child.service';
 import { CreateChildDto } from './dto/create-child.dto';
-import { FindOneParamsDto } from 'src/common/dto/find-one-params.dto';
+import { FindOneParamsDto } from '../common/dto/find-one-params.dto';
+import { RemoveAssignementDto } from './dto/remove-assignement.dto';
 
 @Controller()
 export class ChildController {
@@ -36,8 +40,7 @@ export class ChildController {
 
   @Delete('child-care/:childCareId/child/:childId')
   async removeAssignment(
-    @Param('childCareId') childCareId: number,
-    @Param('childId') childId: number,
+    @Param() removeAssignementDto: RemoveAssignementDto,
     @Headers('X-Auth') username: string,
   ) {
     if (!username) {
@@ -45,9 +48,23 @@ export class ChildController {
     }
 
     return this.childService.removeChildAssignment(
-      childCareId,
-      childId,
+      removeAssignementDto.childCareId,
+      removeAssignementDto.childId,
       username,
     );
+  }
+
+  @Get('children/export.csv')
+  async exportChildren(
+    @Query('childCareId') childCareId: number | undefined,
+    @Res() res: Response,
+  ) {
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="children_export.csv"',
+    );
+
+    await this.childService.exportChildren(res, childCareId);
   }
 }

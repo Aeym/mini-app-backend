@@ -1,5 +1,5 @@
-import { ChildCare } from 'src/child-care/entities/child-care.entity';
-import { User } from 'src/users/entities/user.entity';
+import { ChildCare } from '../../child-care/entities/child-care.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Column,
   Entity,
@@ -20,7 +20,7 @@ export class Child {
   @Column()
   lastname: string;
 
-  @ManyToOne(() => User, (user) => user.children)
+  @ManyToOne(() => User, (user) => user.children, { eager: true })
   user: User;
 
   @ManyToMany(() => ChildCare, (childCare) => childCare.children)

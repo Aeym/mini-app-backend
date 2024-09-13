@@ -11,7 +11,7 @@ import {
 
 import { ChildCareService } from './child-care.service';
 import { CreateChildCareDto } from './dto/create-child-care.dto';
-import { FindOneParamsDto } from 'src/common/dto/find-one-params.dto';
+import { FindOneParamsDto } from '../common/dto/find-one-params.dto';
 
 @Controller()
 export class ChildCareController {
