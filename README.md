@@ -98,8 +98,7 @@ npm run test
 
 ## Future Improvements
 
-Future improvements will include more thorough error handling, advanced input validation, additional security measures, performance optimizations and
-more robust tests. Also, ensuring better adherence to Clean Code, KISS, YAGNI, and DRY principles.
+Future improvements will include more thorough error handling, advanced input validation, additional security measures, performance optimizations (optimizing how relationships between entities are handled, such as fetching only the necessary fields rather than entire related entities to reduce payload size and improve response times), and more robust tests. Also, ensuring better adherence to Clean Code, KISS, YAGNI, and DRY principles.
 
 ## Contact
 
